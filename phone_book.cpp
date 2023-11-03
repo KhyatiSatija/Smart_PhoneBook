@@ -3,6 +3,7 @@
 #include <string>
 #include <algorithm>
 #include<fstream>
+#include <regex>
 
 using namespace std;
 
@@ -44,48 +45,73 @@ public:
         return true;
     }
 
+    bool isValidEmail(const std::string& email) {
+        // Regular expression to validate an email address
+        const std::regex pattern("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}$");
+        return std::regex_match(email, pattern);
+    }
+
     // Function to add a new contact
     void addContact(const string& fn, const string& ln, const string& phone, const string& email){
         Contact* newContact = new Contact(fn, ln, phone, email);
 
+        // Check if a contact with the same phone number already exists
+        Contact* current = head;
+        Contact* duplicateContact = nullptr;
+        while (current) {
+            if (current->phoneNumber == phone) {
+                duplicateContact = current;
+                break;
+            }
+            current = current->next;
+        }
+
+        if (duplicateContact) {
+        // A contact with the same phone number already exists
+        char choice;
+        cout << "A contact with the same phone number already exists. Do you want to merge the contacts (Y/N)? ";
+        cin >> choice;
+        cin.ignore();
+        if (toupper(choice) == 'Y') {
+            duplicateContact->firstName = fn;
+            duplicateContact->lastName = ln;
+            duplicateContact->email = email;
+            // Do not add the new contact
+            delete newContact;
+            cout << "Contacts merged successfully!" << endl;
+        } 
+        else {
+            // Do not merge, add the new contact
+            if (!head) {
+                head = newContact;
+            } else {
+                current = head;
+                while (current->next) {
+                    current = current->next;
+                }
+                current->next = newContact;
+            }
+            cout << "Contact added successfully!" << endl;
+        }
+        }
+        else {
+        // No duplicate contact found, add the new contact
         if (!head) {
             head = newContact;
-        } else {
-            Contact* current = head;
+        } 
+        else{
+            current = head;
             while (current->next) {
                 current = current->next;
             }
             current->next = newContact;
         }
-
-        // char choice;
-        // cout << "Do you want to add another phone number for this contact? (Y/N): ";
-        // cin >> choice;
-        // cin.ignore();  // Clear newline character from previous input
-        // while (toupper(choice) == 'Y') {
-        //     string additionalPhone;
-        //     cout << "Enter an additional phone number: ";
-        //     cin >> additionalPhone;
-        //     Contact* newPhone = new Contact(fn, ln, additionalPhone, "");
-        //     Contact* current = head;
-        //     while (current->next) {
-        //         current = current->next;
-        //     }
-        //     current->next = newPhone;
-        //     cout << "Do you want to add another phone number for this contact? (Y/N): ";
-        //     cin >> choice;
-        //     cin.ignore();  // Clear newline character from previous input
-        // }
         cout << "\n";
         cout << "Contact added successfully!" << endl;
+        }
     }
 
-    // // Function to compare two contacts for sorting by first name
-
-    // bool compareContacts(const Contact* a, const Contact* b) {
-    //     return a->firstName < b->firstName;
-    // }
-
+       
     // Function to display all contacts
 
 
@@ -108,10 +134,13 @@ public:
     }
 
     // Sort the contacts by first name
-    std::sort(contactArray, contactArray + contactCount);
+    std::sort(contactArray, contactArray + contactCount,  [](Contact* a, Contact* b){
+        return a->firstName < b->firstName;
+    });
 
     // Display sorted contacts
-    // cout << "Contacts in alphabetical order:" << endl;
+    cout << "Contacts in alphabetical order:" << endl;
+    cout << "\n" ;
 
     for (int i = 0; i < contactCount; i++) {
         cout << "First Name: " << contactArray[i]->firstName << "\t\t\t\t";
@@ -125,9 +154,9 @@ public:
     delete[] contactArray;
     }
 
-
-    // Function to delete a contact
-    void deleteContact(){
+    //Function to delete a contact
+ 
+    void deleteContact() {
     if (!head) {
         cout << "Phone book is empty. No contacts to delete." << endl;
         return;
@@ -146,38 +175,64 @@ public:
     if (choice == 1) {
         // Delete by name
         cout << "Enter the first name of the contact you want to delete: ";
-        cin >> searchKey;
-        cin.ignore();  // Clear newline character from previous input
-        Contact* prev = nullptr;
+        getline(cin, searchKey);
+        // cin.ignore();  // Clear newline character from previous input
+
         Contact* current = head;
         bool found = false;
+        int contactNumber = 1; // To display contact number
 
         while (current) {
             if (current->firstName == searchKey) {
                 found = true;
-                cout << current -> firstName << " " <<  current-> lastName <<endl;
-                cout << "Phone number :" << current-> phoneNumber <<endl;
-                if (prev) {
-                    prev->next = current->next;
-                } else {
-                    head = current->next;
-                }
-                delete current;
-                cout << "This Contact is deleted successfully!" << endl;
-                break;
+                cout << "Contact " << contactNumber << ":" << endl;
+                cout << "Name: " << current->firstName << " " << current->lastName << endl;
+                cout << "Phone number: " << current->phoneNumber << endl;
+                cout << "Email: " << current -> email << endl;
+                cout << "\n";
+                contactNumber++;
             }
-            prev = current;
             current = current->next;
         }
 
         if (!found) {
-            cout << "Contact not found." << endl;
+            cout << "No contacts with the specified name found." << endl;
+        } else {
+            // Ask the user to choose which contact to delete by contact number
+            int contactToDelete;
+            cout << "Enter the number of the contact you want to delete: ";
+            cin >> contactToDelete;
+            cin.ignore();  // Clear newline character from previous input
+
+            // Find the chosen contact to delete and perform deletion
+            current = head;
+            Contact* prev = nullptr;
+            int currentContactNumber = 1;
+
+            while (current) {
+                if (current->firstName == searchKey) {
+                    if (currentContactNumber == contactToDelete) {
+                        if (prev) {
+                            prev->next = current->next;
+                        } else {
+                            head = current->next;
+                        }
+                        delete current;
+                        cout << "Contact " << contactToDelete << " has been deleted." << endl;
+                        break;
+                    }
+                    currentContactNumber++;
+                }
+                prev = current;
+                current = current->next;
+            }
         }
     } else if (choice == 2) {
         // Delete by phone number
         cout << "Enter the phone number of the contact you want to delete: ";
-        cin >> searchKey;
-        cin.ignore();  // Clear newline character from previous input
+        getline(cin, searchKey);
+        // cin.ignore();  // Clear newline character from previous input
+
         Contact* prev = nullptr;
         Contact* current = head;
         bool found = false;
@@ -185,15 +240,9 @@ public:
         while (current) {
             if (current->phoneNumber == searchKey) {
                 found = true;
-                cout << current -> firstName << " " << current-> lastName <<endl;
-                cout << "Phone number :" << current-> phoneNumber <<endl;
-                if (prev) {
-                    prev->next = current->next;
-                } else {
-                    head = current->next;
-                }
-                delete current;
-                cout << "This Contact is deleted successfully!" << endl;
+                cout << "Contact found: " << current->firstName << " " << current->lastName << endl;
+                cout << "Phone number: " << current->phoneNumber << endl;
+                cout << "Email: " << current -> email << endl;
                 break;
             }
             prev = current;
@@ -202,7 +251,26 @@ public:
 
         if (!found) {
             cout << "Contact not found." << endl;
+        } else {
+            // Confirm with the user if they want to delete the contact
+            cout << "Do you want to delete this contact? (Y/N): ";
+            char confirmDelete;
+            cin >> confirmDelete;
+            cin.ignore();  // Clear newline character from previous input
+
+            if (tolower(confirmDelete) == 'y') {
+                if (prev) {
+                    prev->next = current->next;
+                } else {
+                    head = current->next;
+                }
+                delete current;
+                cout << "Contact has been deleted." << endl;
+            } else {
+                cout << "Contact has not been deleted." << endl;
+            }
         }
+        cout << "Contact deleted successfully !" << endl;
     } else {
         cout << "Invalid choice. Please try again." << endl;
     }
@@ -210,7 +278,8 @@ public:
 
 
     // Function to update a contact
-    void updateContact(){
+
+    void updateContact() {
     if (!head) {
         cout << "Phone book is empty. No contacts to update." << endl;
         return;
@@ -229,94 +298,102 @@ public:
     if (choice == 1) {
         // Update by name
         cout << "Enter the first name of the contact you want to update: ";
-        cin >> searchKey;
-        cin.ignore();  // Clear newline character from previous input
+        getline(cin, searchKey);
+        // cin.ignore();  // Clear newline character from previous input
         Contact* current = head;
         bool found = false;
+        int contactNumber = 1; // To display contact number
 
         while (current) {
             if (current->firstName == searchKey) {
                 found = true;
-                cout << "Contact found. What would you like to update?" << endl;
-                cout << current -> firstName << " " << current-> lastName <<endl;
-                cout << "Phone number :" << current-> phoneNumber <<endl;
-                cout << "Email :" << current-> email<< endl;
-                cout << "1. Update the name" << endl;
-                cout << "2. Update the phone number" << endl;
-                cout << "3. Update the email" << endl;
-                // cout << "4. Add a new phone number" << endl;
-                // cout << "5. Add a new email" << endl;
-                cout << "Enter your choice: ";
-                cin >> choice;
-                cin.ignore();  // Clear newline character from previous input
-
-                string newFirstName, newLastName;
-                string newPhoneNumber;
-                string newEmail;
-                switch (choice) {
-                    case 1:
-                        // Update the name
-                        
-                        cout << "New First Name : "; 
-                        cin >> newFirstName;
-                        cin .ignore();
-                        cout << "New Last Name : ";
-                        cin >> newLastName;
-                        cin.ignore();
-
-                        //Update the contact's information
-                        current -> firstName = newFirstName;
-                        current -> lastName = newLastName;
-                        cout << "Contact updated successfully!" << endl;
-                        
-                        break;
-                    case 2:
-                        // Update the phone number
-                        
-                        cout << "New Phone Number: ";
-                        cin >> newPhoneNumber;
-                        cin.ignore();
-                        
-                        // Implement the code to update the phone number
-                        current->phoneNumber = newPhoneNumber;
-                        cout << "Contact updated successfully!" << endl;
-                        break;
-                    case 3:
-                        // Update the email
-                        
-                        cout << "New Email: ";
-                        cin >> newEmail;
-                        cin.ignore();
-
-                        // Implement the code to update the email
-                        current->email = newEmail;
-
-                        cout << "Contact updated successfully!" << endl;
-                        
-                        break;
-                    // case 4:
-                    //     // Add a new phone number
-                        
-                    //     break;
-                    // case 5:
-                    //     // Add a new email
-                        
-                    //     break;
-                    default:
-                        cout << "Invalid choice. Please try again." << endl;
-                }
-                break;
+                cout << "Contact " << contactNumber << ":" << endl;
+                cout << "Name: " << current->firstName << " " << current->lastName << endl;
+                cout << "Phone number: " << current->phoneNumber << endl;
+                cout << "Email: " << current->email << endl;
+                cout << "\n" ;
+                contactNumber++;
             }
             current = current->next;
         }
 
         if (!found) {
-            cout << "Contact not found." << endl;
+            cout << "No contacts with the specified name found." << endl;
+        } else {
+            // Ask the user to choose which contact to update by contact number
+            int contactToUpdate;
+            cout << "Select the contact you want to update: ";
+            cin >> contactToUpdate;
+            cin.ignore();  // Clear newline character from previous input
+
+            // Find the chosen contact to update and perform updating
+            current = head;
+            int currentContactNumber = 1;
+
+            while (current) {
+                if (current->firstName == searchKey) {
+                    if (currentContactNumber == contactToUpdate) {
+                        cout << "Contact selected. What would you like to update?" << endl;
+                        cout << "1. Update the name" << endl;
+                        cout << "2. Update the phone number" << endl;
+                        cout << "3. Update the email" << endl;
+                        cout << "Enter your choice: ";
+                        cin >> choice;
+                        cin.ignore();  // Clear newline character from previous input
+
+                        string newFirstName, newLastName;
+                        string newPhoneNumber;
+                        string newEmail;
+
+                        switch (choice) {
+                            case 1:
+                                // Update the name
+                                cout << "New First Name: ";
+                                getline(cin, newFirstName);
+                                // cin.ignore();
+                                cout << "New Last Name: ";
+                                getline(cin, newLastName);
+                                // cin.ignore();
+
+                                // Update the contact's information
+                                current->firstName = newFirstName;
+                                current->lastName = newLastName;
+                                cout << "Contact updated successfully!" << endl;
+                                break;
+                            case 2:
+                                // Update the phone number
+                                cout << "New Phone Number: ";
+                                getline(cin, newPhoneNumber);
+                                // cin.ignore();
+
+                                // Implement the code to update the phone number
+                                current->phoneNumber = newPhoneNumber;
+                                cout << "Contact updated successfully!" << endl;
+                                break;
+                            case 3:
+                                // Update the email
+                                cout << "New Email: ";
+                                getline(cin, newEmail);
+                                // cin.ignore();
+
+                                // Implement the code to update the email
+                                current->email = newEmail;
+                                cout << "Contact updated successfully!" << endl;
+                                break;
+                            default:
+                                cout << "Invalid choice. Please try again." << endl;
+                        }
+                        break;
+                    }
+                    currentContactNumber++;
+                }
+                current = current->next;
+            }
         }
     } else if (choice == 2) {
         // Update by phone number
         cout << "Enter the phone number of the contact you want to update: ";
-        cin >> searchKey;
+        getline(cin, searchKey);
         cin.ignore();  // Clear newline character from previous input
         Contact* current = head;
         bool found = false;
@@ -325,14 +402,12 @@ public:
             if (current->phoneNumber == searchKey) {
                 found = true;
                 cout << "Contact found. What would you like to update?" << endl;
-                cout << current -> firstName << " " << current-> lastName <<endl;
-                cout << "Phone number :" << current-> phoneNumber <<endl;
-                cout << "Email :" << current-> email<< endl;
+                cout << current -> firstName << current ->lastName <<endl;
+                cout << "Phone Number: " << current -> phoneNumber << endl;
+                cout << "Email; " << current ->email <<endl;
                 cout << "1. Update the name" << endl;
                 cout << "2. Update the phone number" << endl;
                 cout << "3. Update the email" << endl;
-                // cout << "4. Add a new phone number" << endl;
-                // cout << "5. Add a new email" << endl;
                 cout << "Enter your choice: ";
                 cin >> choice;
                 cin.ignore();  // Clear newline character from previous input
@@ -340,54 +415,48 @@ public:
                 string newFirstName, newLastName;
                 string newPhoneNumber;
                 string newEmail;
+
                 switch (choice) {
                     case 1:
                         // Update the name
-                        
-                        cout << "New First Name : "; 
-                        cin >> newFirstName;
-                        cin .ignore();
-                        cout << "New Last Name : ";
-                        cin >> newLastName;
-                        cin.ignore();
+                        cout << "New First Name: ";
+                        getline(cin, newFirstName);
+                        // cin.ignore();
+                        cout << "New Last Name: ";
+                        getline(cin, newLastName);
+                        // cin.ignore();
 
-                        //Update the contact's information
-                        current -> firstName = newFirstName;
-                        current -> lastName = newLastName;
+                        // Update the contact's information
+                        current->firstName = newFirstName;
+                        current->lastName = newLastName;
                         cout << "Contact updated successfully!" << endl;
                         break;
                     case 2:
                         // Update the phone number
-                        
                         cout << "New Phone Number: ";
-                        cin >> newPhoneNumber;
-                        cin.ignore();
-                        
+                        getline(cin, newPhoneNumber);
+                        // cin.ignore();
+                        while(!isValidPhoneNumber(newPhoneNumber)){
+                            getline(cin, newPhoneNumber);
+                        }
+
                         // Implement the code to update the phone number
                         current->phoneNumber = newPhoneNumber;
                         cout << "Contact updated successfully!" << endl;
                         break;
                     case 3:
                         // Update the email
-                        
                         cout << "New Email: ";
-                        cin >> newEmail;
-                        cin.ignore();
+                        getline(cin, newEmail);
+                        // cin.ignore();
+                        while (!isValidEmail(newEmail)){
+                            getline(cin, newEmail);
+                        }
 
                         // Implement the code to update the email
                         current->email = newEmail;
-
                         cout << "Contact updated successfully!" << endl;
-                
                         break;
-                    // case 4:
-                    //     // Add a new phone number
-                        
-                    //     break;
-                    // case 5:
-                    //     // Add a new email
-                        
-                        // break;
                     default:
                         cout << "Invalid choice. Please try again." << endl;
                 }
@@ -404,8 +473,6 @@ public:
     }
 }
 
-
-    // Function to get the number of contacts
     int getContactCount(){
         int count = 0;
         Contact* current = head;
@@ -438,22 +505,23 @@ public:
     if (choice == 1) {
         // Search by name
         cout << "Enter the first name of the contact you want to search for: ";
-        cin >> searchKey;
-        cin.ignore();  // Clear newline character from previous input
+        getline(cin, searchKey);
+        // cin.ignore();  // Clear newline character from previous input
         Contact* current = head;
         bool found = false;
 
         while (current) {
             if (current->firstName == searchKey) {
                 found = true;
-                cout << "Contact is found !! ";
+                // cout << "Contact is found !! ";
                 cout << "\n";
                 cout << "Contact details are:" << endl;
                 cout << "First Name: " << current->firstName << endl;
                 cout << "Last Name: " << current->lastName << endl;
                 cout << "Phone Number: " << current->phoneNumber << endl;
                 cout << "Email: " << current->email << endl;
-                break;
+                // break;
+                cout << "\n";
             }
             current = current->next;
         }
@@ -464,7 +532,7 @@ public:
     } else if (choice == 2) {
         // Search by email
         cout << "Enter the email of the contact you want to search for: ";
-        cin >> searchKey;
+        getline(cin, searchKey);
         cin.ignore();  // Clear newline character from previous input
         Contact* current = head;
         bool found = false;
@@ -472,14 +540,14 @@ public:
         while (current) {
             if (current->email == searchKey) {
                 found = true;
-                cout << "Contact is found !! ";
+                // cout << "Contact is found !! ";
                 cout << "\n";
                 cout << "Contact details are :" << endl;
                 cout << "First Name: " << current->firstName << endl;
                 cout << "Last Name: " << current->lastName << endl;
                 cout << "Phone Number: " << current->phoneNumber << endl;
                 cout << "Email: " << current->email << endl;
-                break;
+                cout << "\n";
             }
             current = current->next;
         }
@@ -490,7 +558,7 @@ public:
     } else if (choice == 3) {
         // Search by phone number
         cout << "Enter the phone number of the contact you want to search for: ";
-        cin >> searchKey;
+        getline(cin, searchKey);
         cin.ignore();  // Clear newline character from previous input
         Contact* current = head;
         bool found = false;
@@ -498,14 +566,15 @@ public:
         while (current) {
             if (current->phoneNumber == searchKey) {
                 found = true;
-                cout << "Contact is found !! ";
+                // cout << "Contact is found !! ";
                 cout << "\n";
                 cout << "Contact details are :" << endl;
                 cout << "First Name: " << current->firstName << endl;
                 cout << "Last Name: " << current->lastName << endl;
                 cout << "Phone Number: " << current->phoneNumber << endl;
                 cout << "Email: " << current->email << endl;
-                break;
+                cout << "\n";
+                // break;
             }
             current = current->next;
         }
@@ -521,7 +590,11 @@ public:
 
     // Function to delete all contacts
     void deleteAllContacts(){
-        while (head) {
+        if (!head){
+            cout << "Phone book is empty. No contacts to delete." << endl;
+            return;
+        }
+        while (head){
         Contact* current = head;
         head = head->next;
         delete current;
@@ -570,7 +643,7 @@ int main() {
 
     do {
         
-        system("Color 9C");
+        system("Color 5F");
         cout<<"\n\n\n\n\n";
 	    cout<<"\t\t\t\t\t--------------------------------------------\n";
 	    cout<<"\t\t\t\t\t--------------------------------------------\n";
@@ -578,19 +651,26 @@ int main() {
 	    cout<<"\t\t\t\t\t--------------------------------------------\n";
 	    cout<<"\t\t\t\t\t|                                          |\n";
 	    cout<<"\t\t\t\t\t|       [1]  Add a new Contact             |\n";
+        // cout<<"\t\t\t\t\t|                                          |\n";
 	    cout<<"\t\t\t\t\t|       [2]  Diplay All Contacts           |\n";
+        // cout<<"\t\t\t\t\t|                                          |\n";
 	    cout<<"\t\t\t\t\t|       [3]  Delete a contact              |\n";
+        // cout<<"\t\t\t\t\t|                                          |\n";
 	    cout<<"\t\t\t\t\t|       [4]  Update a contact              |\n";
+        // cout<<"\t\t\t\t\t|                                          |\n";
 	    cout<<"\t\t\t\t\t|       [5]  Number of Contacts            |\n";
+        // cout<<"\t\t\t\t\t|                                          |\n";
 	    cout<<"\t\t\t\t\t|       [6]  Search                        |\n";
+        // cout<<"\t\t\t\t\t|                                          |\n";
 	    cout<<"\t\t\t\t\t|       [7]  Delete All  Contacts          |\n";
-	    cout<<"\t\t\t\t\t|                                          |\n";
+	    // cout<<"\t\t\t\t\t|                                          |\n";
 	    cout<<"\t\t\t\t\t--------------------------------------------\n";
 	    cout<<"\t\t\t\t\t|       [8]  Exit                          |\n";
 	    cout<<"\t\t\t\t\t--------------------------------------------\n";
 
         cout << "Enter your choice: ";
         cin >> choice;
+        cin.ignore();
 
         string firstName, lastName, phoneNumber, eMail;
         int count;
@@ -600,17 +680,27 @@ int main() {
                 cout << "Enter the following details: " << endl;
                 
                 cout << "\n Enter the first name : " << endl;
-                cin >> firstName;
+                getline(cin, firstName);
+                // cin.ignore();
                 cout << "Enter the last name : " << endl;
-                cin >> lastName;
+                getline(cin, lastName);
+                // cin.ignore();
                 cout << "Enter the phone number :" << endl;
-                cin >> phoneNumber;
+                getline(cin, phoneNumber);
+                // cin.ignore();
                 while (!phoneBook.isValidPhoneNumber(phoneNumber)){
                     cout << "Invalid phone number. Please enter a 10-digit numeric phone number." << endl;
-                    cin >> phoneNumber;
+                    getline(cin, phoneNumber);
+                    // cin.ignore();
                 }
                 cout << "Enter the mail :" << endl;
-                cin >> eMail;
+                getline(cin, eMail);
+                // cin.ignore();
+                while (!phoneBook.isValidEmail(eMail)){
+                    cout << "Invalid Email Address. Please enter a valid email address." << endl;
+                    getline(cin, eMail);
+                    // cin.ignore();
+                }
                 phoneBook.addContact(firstName, lastName, phoneNumber, eMail);
                 break;
             case 2:
@@ -643,6 +733,11 @@ int main() {
                 break;
             default:
                 cout << "Invalid choice. Please try again." << endl;
+                if (!isdigit(choice)){
+                    cout << "Invalid choice. Please try again." << endl;
+                    system("cls");
+                    break;
+                }
                 break;
         }
     } while (choice != 8);
@@ -650,13 +745,19 @@ int main() {
     return 0;
 }
 
-// ADDITIONAL FEATURES
+// ADDITIONAL FEATURES TO ADD
 
 // one contact can have multiple phone numbers and multiple emails
 
-//remove duplicates
-//one contact multiple numbers and emails
-//place a check if number is 10 digit or not
-//place a check if the email is valid or not
-// when updating contacts, you should check if the contact exists before trying to update it.
 // functionality to save and load contact data from a file, so that contacts are not lost when the program exits.
+
+
+
+// bug fixes - 
+// now user can give spaces
+// user can have multiple conatcts with the same name
+// email validation
+// zero contacts all deleted handled
+//handles same names and duplicates in all cases
+
+
