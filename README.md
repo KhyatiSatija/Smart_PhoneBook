@@ -1,6 +1,8 @@
 # Smart Phone Book Application
 
 The **Phone Book Application** is a simple C++ program that allows users to manage a digital phone book. Users can add, display, update, search, and delete contacts within the phone book. This project is designed to help users organize and maintain a list of contacts with their personal information, such as names, phone numbers, and email addresses.
+
+
 ![image](https://github.com/KhyatiSatija/Smart_PhoneBook/assets/114605066/391a2d93-0cd2-4060-90e6-9e63ab3ba20a)
 
 ## Features
