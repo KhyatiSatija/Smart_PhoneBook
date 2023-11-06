@@ -1,9 +1,9 @@
-#include <windows.h>
-#include <iostream>
+#include <windows.h> //sleep and system (termical color)
+#include <iostream> //input and output
 #include <string>
-#include <algorithm>
-#include<fstream>
-#include <regex>
+#include <algorithm> //sort method used
+#include<fstream> //file handling
+#include <regex> //email validation
 
 using namespace std;
 
@@ -69,7 +69,7 @@ public:
         if (duplicateContact) {
         // A contact with the same phone number already exists
         char choice;
-        cout << "A contact with the same phone number already exists. Do you want to merge the contacts (Y/N)? ";
+        cout << "A contact with the same phone number already exists. \n Do you want to merge the contacts (Y/N)? ";
         cin >> choice;
         cin.ignore();
         if (toupper(choice) == 'Y') {
@@ -109,6 +109,7 @@ public:
         cout << "\n";
         cout << "Contact added successfully!" << endl;
         }
+        //
     }
 
        
@@ -617,7 +618,6 @@ public:
 
 // Implement the member functions of PhoneBook
 int main() {
-    // start();
 
     system("Color 9C");
     cout<<"\n\n\n\n\n\n\n\n\n";
@@ -651,19 +651,12 @@ int main() {
 	    cout<<"\t\t\t\t\t--------------------------------------------\n";
 	    cout<<"\t\t\t\t\t|                                          |\n";
 	    cout<<"\t\t\t\t\t|       [1]  Add a new Contact             |\n";
-        // cout<<"\t\t\t\t\t|                                          |\n";
 	    cout<<"\t\t\t\t\t|       [2]  Diplay All Contacts           |\n";
-        // cout<<"\t\t\t\t\t|                                          |\n";
 	    cout<<"\t\t\t\t\t|       [3]  Delete a contact              |\n";
-        // cout<<"\t\t\t\t\t|                                          |\n";
 	    cout<<"\t\t\t\t\t|       [4]  Update a contact              |\n";
-        // cout<<"\t\t\t\t\t|                                          |\n";
 	    cout<<"\t\t\t\t\t|       [5]  Number of Contacts            |\n";
-        // cout<<"\t\t\t\t\t|                                          |\n";
 	    cout<<"\t\t\t\t\t|       [6]  Search                        |\n";
-        // cout<<"\t\t\t\t\t|                                          |\n";
 	    cout<<"\t\t\t\t\t|       [7]  Delete All  Contacts          |\n";
-	    // cout<<"\t\t\t\t\t|                                          |\n";
 	    cout<<"\t\t\t\t\t--------------------------------------------\n";
 	    cout<<"\t\t\t\t\t|       [8]  Exit                          |\n";
 	    cout<<"\t\t\t\t\t--------------------------------------------\n";
@@ -733,11 +726,6 @@ int main() {
                 break;
             default:
                 cout << "Invalid choice. Please try again." << endl;
-                if (!isdigit(choice)){
-                    cout << "Invalid choice. Please try again." << endl;
-                    system("cls");
-                    break;
-                }
                 break;
         }
     } while (choice != 8);
