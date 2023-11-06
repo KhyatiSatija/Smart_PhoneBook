@@ -6,7 +6,8 @@ The **Phone Book Application** is a simple C++ program that allows users to mana
 ![image](https://github.com/KhyatiSatija/Smart_PhoneBook/assets/114605066/391a2d93-0cd2-4060-90e6-9e63ab3ba20a)
 
 ## Features
-![image](https://github.com/KhyatiSatija/Smart_PhoneBook/assets/114605066/24629994-9dfd-480f-8060-286096e49680)
+![image](https://github.com/KhyatiSatija/Smart_PhoneBook/assets/114605066/3350b553-afcd-4448-adf8-31d511726068)
+
  
 
 - **Add a New Contact:** Users can add a new contact to the phone book, including their first name, last name, phone number, and email address. Multiple phone numbers can be associated with a single contact.
@@ -22,6 +23,12 @@ The **Phone Book Application** is a simple C++ program that allows users to mana
 - **Number of Contacts:** The application provides information about the total number of contacts in the phone book.
 
 - **Delete All Contacts:** Users can delete all contacts from the phone book.
+
+## Quick Fixes
+- It handles the spaces between the user input
+- It validates the phone number and the email entered by the user
+- It handles duplicate entires
+- The user gets the option to merge two duplicate entires into one if two entries have the same phone number
 
 ## Getting Started
 
